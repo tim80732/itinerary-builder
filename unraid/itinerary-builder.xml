@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>itinerary-builder</Name>
+  <Repository>itinerary-builder:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support/>
+  <Project>https://github.com/tim80732/itinerary-builder</Project>
+  <Overview>
+    Build travel itineraries card by card and export them as one self-contained
+    HTML file: calendar-first view, tap a day for its compact cards, tap a card
+    for full details, a printable schedule sheet, a cost summary in NT$, and every
+    booking document (JPG/PNG/PDF) embedded so the page works offline.
+
+    Trips are stored as plain JSON plus uploaded files under /data — back that
+    path up. Set APP_PASSWORD to require a login (any username, that password).
+
+    NOTE: this template uses an image built on the server from
+    https://github.com/tim80732/itinerary-builder - see its README.
+  </Overview>
+  <Category>Productivity: Tools:Utilities</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/tim80732/itinerary-builder/main/unraid/itinerary-builder.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/twbs/icons/main/icons/compass.svg</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <Config Name="WebUI Port" Target="8080" Default="8099" Mode="tcp"
+          Description="Port for the editor web UI." Type="Port" Display="always"
+          Required="true" Mask="false">8099</Config>
+
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/itinerary-builder/data"
+          Mode="rw" Description="Trips (JSON) and uploaded documents. Back this up."
+          Type="Path" Display="always" Required="true"
+          Mask="false">/mnt/user/appdata/itinerary-builder/data</Config>
+
+  <Config Name="App Password" Target="APP_PASSWORD" Default="" Mode=""
+          Description="Require a login for the editor (any username, this password). Leave empty to disable."
+          Type="Variable" Display="always" Required="false" Mask="true"/>
+
+  <Config Name="API Token" Target="ITINERARY_API_TOKEN" Default="" Mode=""
+          Description="Bearer token for the JSON API at /api/v1 (for scripts and AI agents). Leave empty to turn the API off."
+          Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <Config Name="Max Upload MB" Target="MAX_UPLOAD_MB" Default="25" Mode=""
+          Description="Largest single document upload, in MB."
+          Type="Variable" Display="advanced" Required="false" Mask="false">25</Config>
+
+  <Config Name="Timezone" Target="TZ" Default="Asia/Taipei" Mode=""
+          Description="Container timezone — used for the 'today' highlight in the calendar."
+          Type="Variable" Display="advanced" Required="false" Mask="false">Asia/Taipei</Config>
+</Container>

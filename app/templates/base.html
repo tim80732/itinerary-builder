@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Itinerary Builder{% endblock %}</title>
+<script>
+/* Ahead of the stylesheet, so the page never paints the wrong way round first.
+   Nothing stored means Auto, which the media query in app.css resolves. */
+try {
+  var _t = localStorage.getItem('ib-theme');
+  if (_t === 'light' || _t === 'dark') document.documentElement.setAttribute('data-theme', _t);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<header class="bar">
+  <button class="theme-btn" id="themeBtn" type="button" title="Light or dark" aria-label="Switch between light and dark">
+    <svg class="moon" viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M13.6 10.3A5.8 5.8 0 0 1 5.7 2.4 6 6 0 1 0 13.6 10.3z"/></svg>
+    <svg class="sun" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.4v1.5M8 13.1v1.5M1.4 8h1.5M13.1 8h1.5M3.3 3.3l1 1M11.7 11.7l1 1M12.7 3.3l-1 1M4.3 11.7l-1 1"/></svg>
+  </button>
+  <a class="brand" href="{{ url_for('index') }}">🧭 Itinerary Builder</a>
+  {% block bar %}{% endblock %}
+</header>
+
+<main class="wrap">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flashes">
+        {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<div class="ask-overlay" id="leaveModal">
+  <div class="ask-box">
+    <h2>Unsaved changes</h2>
+    <p class="muted">This page has edits that haven’t been saved yet.</p>
+    <div class="actions">
+      <button class="primary" type="button" id="leaveSave">Save changes</button>
+      <button type="button" id="leaveDiscard">Leave without saving</button>
+      <button class="ghost" type="button" id="leaveStay">Keep editing</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

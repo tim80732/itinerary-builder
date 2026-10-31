@@ -1,0 +1,9 @@
+# keep the build context small and never bake trip data into the image
+data/
+*.zip
+__pycache__/
+*.py[cod]
+.git/
+.venv/
+venv/
+.DS_Store

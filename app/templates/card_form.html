@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}{{ 'New card' if is_new else 'Edit card' }} · {{ trip.name }}{% endblock %}
+{% block body_class %}editor{% endblock %}
+{% from "_links.html" import links_editor %}
+
+{% block bar %}
+<div class="bar-actions">
+  <a class="btn" href="{{ url_for('edit_trip', trip_id=trip.id, restore=1) }}">← Back to trip</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ 'Add card' if is_new else 'Edit card' }}</h1>
+
+<script id="type-kinds" type="application/json">{{ kinds|tojson }}</script>
+<script id="type-modes" type="application/json">{{ type_modes|tojson }}</script>
+<script id="type-icons" type="application/json">{ {%- for key, meta in types.items() %}{{ key|tojson }}: {{ meta.icon|tojson }}{{ ", " if not loop.last }}{% endfor -%} }</script>
+
+<div class="editor-layout" id="editorLayout">
+<div class="editor-main" id="editorMain">
+<form method="post" action="{{ url_for('save_card', trip_id=trip.id) }}"
+      enctype="multipart/form-data" class="panel grid" id="cardForm"
+      data-preview-url="{{ url_for('card_preview', trip_id=trip.id) }}"
+      data-doc-count="{{ card.docs|length if card.docs else 0 }}"
+      data-dirty-guard>
+  <input type="hidden" name="id" value="{{ card.id }}">
+
+  <label class="half">Type
+    <select name="type" id="typeSelect">
+      {% for key, meta in types.items() %}
+      <option value="{{ key }}" {{ 'selected' if card.type == key }}>{{ meta.icon }} {{ meta.label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Icon <span class="hint">emoji, blank = mode / type default</span>
+    <input name="icon" id="iconInput" value="{{ card.icon or '' }}" maxlength="4" placeholder="🚃">
+  </label>
+
+  <label class="half mode-field" id="modeField">Mode <span class="hint">sets the label and icon on the page</span>
+    <select name="mode" id="modeSelect">
+      <option value="" {{ 'selected' if not card.mode }}>Not set (shows “Transit”)</option>
+      {% for key, m in (type_modes.get('transit') or {}).items() %}
+      <option value="{{ key }}" {{ 'selected' if card.mode == key }}>{{ m.icon }} {{ m.label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label data-kinds="point" class="kind-field">Type label <span class="hint">for custom cards</span>
+    <input name="type_label" value="{{ card.type_label or '' }}" placeholder="Museum">
+  </label>
+
+  <label class="half">Title <span class="hint">hotel name, event, or “Sapporo → Otaru”</span>
+    <input name="title" value="{{ card.title or '' }}" required>
+  </label>
+  <label class="half">Heads-up
+    <span class="hint">a red second line under the title, wherever the card is listed</span>
+    <input name="alert" value="{{ card.alert or '' }}" placeholder="(closes at 4PM!)">
+  </label>
+
+  <label class="half">Place / city
+    <input name="place" value="{{ card.place or '' }}" placeholder="Sapporo">
+  </label>
+  <label class="half"><span id="serviceLabel">Operator / reference</span>
+    <input name="service" value="{{ card.service or '' }}" placeholder="Booking.com · 1234.567.890">
+  </label>
+
+  <!-- dates & times -->
+  <div class="span2 subhead">When</div>
+  <label>Start date <span class="hint" data-hint="start_date"></span>
+    <input type="date" name="start_date" value="{{ card.start_date or '' }}" required>
+  </label>
+  <label><span data-label="start_time">Start time</span>
+    <input type="time" name="start_time" value="{{ card.start_time or '' }}">
+  </label>
+  <label data-kinds="move hire stay" class="kind-field">End date
+    <input type="date" name="end_date" value="{{ card.end_date or '' }}">
+  </label>
+  <label><span data-label="end_time">End time</span>
+    <input type="time" name="end_time" value="{{ card.end_time or '' }}">
+  </label>
+
+  <label class="half">Listed under
+    <span class="hint">the heading this sits beneath in the day view · meals are
+      never picked for you</span>
+    <select name="section">
+      <option value="">Automatic — from the start time</option>
+      {% for key, label, manual in sections %}{% if key %}
+      <option value="{{ key }}" {{ 'selected' if card.section == key }}>
+        {{ label }}{{ ' (pick this yourself)' if manual else '' }}
+      </option>
+      {% endif %}{% endfor %}
+    </select>
+  </label>
+
+  <!-- built by app.js from the dates above; only appears for a multi-day card -->
+  <input type="hidden" name="day_toggles" id="dayToggles" value="">
+  <div class="span2 daypick hide" id="dayPick"
+       data-hidden="{{ (card.hide_days or [])|join(' ') }}">
+    <div class="subhead">Shown on</div>
+    <p class="hint daypick-note">Untick a day to keep this card off it — a long
+      rental can show on its pick-up and drop-off days only. The card itself,
+      its dates and its price are unchanged.</p>
+    <div class="daychips" id="dayChips"></div>
+    <div class="daypick-tools">
+      <button type="button" class="ghost small" data-days="all">All days</button>
+      <button type="button" class="ghost small" data-days="ends">First &amp; last only</button>
+    </div>
+  </div>
+
+  <!-- two endpoints: transport & rentals -->
+  <div class="span2 subhead kind-field" data-kinds="move hire">
+    <span data-label="from_head">Departure</span>
+  </div>
+  <label data-kinds="move hire" class="kind-field">City / label
+    <input name="from_label" value="{{ card.from_label or '' }}" placeholder="Sapporo">
+  </label>
+  <label data-kinds="move hire" class="kind-field">Station / airport / desk
+    <input name="from_sub" value="{{ card.from_sub or '' }}" placeholder="Sapporo Sta.">
+  </label>
+  <label data-kinds="move hire" class="kind-field half">Google Maps link
+    <input name="from_map" value="{{ card.from_map or '' }}" placeholder="https://maps.google.com/...">
+  </label>
+
+  <div class="span2 subhead kind-field" data-kinds="move hire">
+    <span data-label="to_head">Arrival</span>
+  </div>
+  <label data-kinds="move hire" class="kind-field">City / label
+    <input name="to_label" value="{{ card.to_label or '' }}" placeholder="Otaru">
+  </label>
+  <label data-kinds="move hire" class="kind-field">Station / airport / desk
+    <input name="to_sub" value="{{ card.to_sub or '' }}" placeholder="Otaru Sta.">
+  </label>
+  <label data-kinds="move hire" class="kind-field half">Google Maps link
+    <input name="to_map" value="{{ card.to_map or '' }}" placeholder="https://maps.google.com/...">
+  </label>
+
+  <!-- single location: hotels, restaurants, places -->
+  <label data-kinds="stay point" class="kind-field half">Address
+    <input name="address" value="{{ card.address or '' }}" placeholder="Kita 5-jo Nishi 4-chome, Chuo-ku, Sapporo">
+  </label>
+  <label data-kinds="stay point" class="kind-field half">Google Maps link
+    <input name="map_link" value="{{ card.map_link or '' }}" placeholder="https://maps.google.com/...">
+  </label>
+
+  <label class="span2">Details <span class="hint">one line per item — shown as the grey row on the card</span>
+    <textarea name="details" rows="4"
+      placeholder="Car 3 · Seats 7A, 7B&#10;Reserved seat&#10;Refundable until the day before">{{ card.details|join('\n') if card.details else '' }}</textarea>
+  </label>
+
+  <div class="span2 subhead">Links <span class="hint">shown above the price, in this order · 🔗 each</span></div>
+  {{ links_editor(card.links, '') }}
+
+  <div class="span2 subhead">Price</div>
+  <label>Price in NT$
+    <input name="price_ntd" value="{{ card.price_ntd or '' }}" inputmode="numeric" placeholder="4500">
+  </label>
+  <label>Original amount <span class="hint">shown under the NT$ figure</span>
+    <input name="price_original" value="{{ card.price_original or '' }}" placeholder="¥21,000">
+  </label>
+  <label>Price label
+    <input name="price_label" value="{{ card.price_label or '' }}" placeholder="2 nights · 1 room">
+  </label>
+  <label>Price note
+    <input name="price_note" value="{{ card.price_note or '' }}" placeholder="Includes tax and accommodation tax">
+  </label>
+
+  <div class="span2 subhead">Documents <span class="hint">JPG / PNG / WEBP, or PDF (pages are rendered automatically)
+    · drag ⠿ to reorder · ✕ and the order apply when you save</span></div>
+  {# One row per document, in the order the viewer's tabs show them. Each row posts its id
+     as `doc_order`; a row removed with ✕ stops posting it and the document leaves the card
+     on save (the history snapshot keeps it revertable). See _form_to_card. #}
+  <input type="hidden" name="doc_order_form" value="1">
+  <div class="span2 doc-rows" data-doc-rows>
+    {% for d in card.docs or [] %}
+    <div class="doc-row">
+      <input type="hidden" name="doc_order" value="{{ d.id }}">
+      <span class="link-grip" title="Drag to reorder" aria-hidden="true">⠿</span>
+      {% if d.pages %}<img src="{{ url_for('serve_upload', trip_id=trip.id, name=d.pages[0]) }}" alt="">
+      {% else %}<span class="tl-thumb">📄</span>{% endif %}
+      <span class="doc-row-name">{{ d.name or d.label }}
+        <span class="hint">
+          {%- if d.pages %}{{ d.pages|length }} page{{ '' if d.pages|length == 1 else 's' }}
+          {%- elif d.mime == 'application/pdf' %}<span class="row-alert">no page images — the page can’t show it</span>
+          {%- endif %}</span></span>
+      {% if d.mime == 'application/pdf' and not is_new %}
+      <button class="ghost small" type="submit" formnovalidate title="Rasterise this PDF again"
+              formaction="{{ url_for('rerender_doc', trip_id=trip.id, card_id=card.id, doc_id=d.id) }}"
+              onclick="return confirm('Re-render this PDF? Unsaved changes on this card are not kept — save first.')">⟳ Re-render</button>
+      {% else %}<span></span>{% endif %}
+      <button type="button" class="ghost small danger doc-row-del" title="Remove from this card" aria-label="Remove">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  <label class="span2">Add files
+    <input type="file" name="documents" accept="image/jpeg,image/png,image/webp,application/pdf" multiple>
+  </label>
+
+  <!-- shown only when the preview pane is stacked below (narrow screens) -->
+  <div class="span2 actions form-actions">
+    <button class="primary" type="submit">{{ 'Add card' if is_new else 'Save card' }}</button>
+    <a class="btn" href="{{ url_for('edit_trip', trip_id=trip.id, restore=1) }}">Cancel</a>
+  </div>
+</form>
+
+</div><!-- /editor-main -->
+
+<div class="splitter" id="splitter" title="Drag to resize · double-click to reset"></div>
+
+<aside class="preview-pane" id="previewPane">
+  <div class="preview-head">
+    <span class="preview-title">Live preview</span>
+  </div>
+  <div class="preview-stage" id="previewStage">
+    <iframe id="previewFrame" title="Card preview"></iframe>
+  </div>
+
+  <!-- always in view: the pane fills the window and never scrolls -->
+  <div class="actions pane-actions">
+    <button class="primary" type="submit" form="cardForm">
+      {{ 'Add card' if is_new else 'Save card' }}
+    </button>
+    <a class="btn" href="{{ url_for('edit_trip', trip_id=trip.id, restore=1) }}">Cancel</a>
+  </div>
+
+  <p class="hint">Rendered by the exporter itself, so it matches the finished page.
+    It follows this pane's width — drag the divider to resize.</p>
+</aside>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+services:
+  itinerary-builder:
+    build: .
+    image: itinerary-builder:latest
+    container_name: itinerary-builder
+    ports:
+      - "8080:8080"
+    volumes:
+      # trips (JSON) + uploaded documents live here — back this folder up
+      - ./data:/data
+    environment:
+      - TZ=Asia/Taipei
+      # Set a password to require login (username: any). Leave empty for no auth.
+      - APP_PASSWORD=
+      # Max upload size per file, MB
+      - MAX_UPLOAD_MB=25
+    restart: unless-stopped

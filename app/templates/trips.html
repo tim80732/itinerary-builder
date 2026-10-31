@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Itineraries</h1>
+
+{% if trips %}
+<div class="panel list">
+  {% for t in trips %}
+  <div class="row">
+    <a class="row-main" href="{{ url_for('edit_trip', trip_id=t.id) }}">
+      <span class="row-title">{{ t.name }}</span>
+      <span class="row-sub">
+        {{ t.start_date or '—' }} → {{ t.end_date or '—' }} ·
+        {{ t.cards }} card{{ '' if t.cards == 1 else 's' }}
+        {%- if t.exports %} · {{ t.exports }} export{{ '' if t.exports == 1 else 's' }}{% endif %}
+        {%- if t.title and t.title != t.name %} · page title “{{ t.title }}”{% endif %}
+      </span>
+    </a>
+    <a class="btn" href="{{ live_url(t.id) }}" target="_blank" title="Live link (shareable, read-only)">🔗</a>
+    <a class="btn" href="{{ url_for('download', trip_id=t.id) }}" title="Download HTML" data-no-guard>⬇</a>
+    <a class="btn" href="{{ url_for('export_zip', trip_id=t.id) }}" title="Export trip + documents" data-no-guard>📦</a>
+    <form method="post" action="{{ url_for('duplicate_trip', trip_id=t.id) }}">
+      <button class="ghost" title="Duplicate trip">⧉</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">Nothing here yet — create your first itinerary below.</p>
+{% endif %}
+
+<div class="panel">
+  <h2>New project</h2>
+  <form method="post" action="{{ url_for('create_trip') }}" class="grid" data-dirty-guard>
+    <label>Project name <span class="hint">used here and for the folder</span>
+      <input name="name" placeholder="台南行" required>
+    </label>
+    <label>Page title <span class="hint">heading in the exported HTML · blank = project name</span>
+      <input name="title" placeholder="Hokkaido Winter Trip">
+    </label>
+    <label>Start date
+      <input type="date" name="start_date" required>
+    </label>
+    <label>End date
+      <input type="date" name="end_date" required>
+    </label>
+    <label class="span2">Eyebrow <span class="hint">small line above the title, optional</span>
+      <input name="eyebrow" placeholder="Winter Getaway">
+    </label>
+    <div class="span2 actions">
+      <button class="primary" type="submit">Create</button>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <h2>Backup &amp; restore</h2>
+  <p class="muted">
+    <strong>📦 Export</strong> (per trip, above) packs the itinerary together with its documents.
+    A whole-library backup contains every trip and every upload.
+  </p>
+  <div class="actions" style="margin-bottom:16px">
+    <a class="btn" href="{{ url_for('backup_all') }}" data-no-guard>⬇ Download full backup (.zip)</a>
+  </div>
+  <form method="post" action="{{ url_for('import_trip') }}" enctype="multipart/form-data" class="inline"
+        onsubmit="return confirm('Import this file? Restoring a full library backup overwrites trips with the same id.')">
+    <input type="file" name="payload" accept=".zip,.json,application/zip,application/json" required>
+    <button type="submit">Import .zip / .json</button>
+  </form>
+  <p class="hint" style="margin-top:10px">
+    A single-trip <code>.zip</code> is imported as a new trip (documents included).
+    A full backup restores every trip in it. A bare <code>.json</code> carries no documents.
+  </p>
+</div>
+{% endblock %}

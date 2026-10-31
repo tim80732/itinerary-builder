@@ -1,0 +1,84 @@
+{# The link editor, shared by the card form (links above the price) and Project
+   details (the trip's links bar). One row per link: displayed text + address,
+   posted as paired `link_text` / `link_url` fields in on-screen order. The
+   `links_form` marker tells the server this form has the editor at all — see
+   _form_links in main.py. Rows are added, removed and dragged by app.js. #}
+{% macro link_row(text='', url='') -%}
+<div class="link-row">
+  <span class="link-grip" title="Drag to reorder" aria-hidden="true">⠿</span>
+  <input name="link_text" value="{{ text }}" placeholder="Text (blank = site name)" aria-label="Displayed text">
+  <input name="link_url" value="{{ url }}" placeholder="https://…" inputmode="url" autocomplete="off"
+         spellcheck="false" aria-label="Link">
+  <button type="button" class="ghost small link-remove" title="Remove this link" aria-label="Remove link">✕</button>
+</div>
+{%- endmacro %}
+
+{# One row of "Trip documents and links" (project page). `key` names the row's own
+   fields (keep_<key>, files_<key>): the item id for a saved item, __KEY__ in the
+   templates app.js copies for a new row. A saved document starts folded to one
+   line; a new one starts open. #}
+{% macro item_row(it, key, tid, fresh=False) -%}
+{% set is_doc = it.kind == 'doc' %}
+<div class="tl-item{{ ' is-doc' if is_doc }}{{ ' closed' if is_doc and not fresh and it.docs }}" data-key="{{ key }}">
+  <input type="hidden" name="item_key" value="{{ key }}">
+  <input type="hidden" name="item_kind" value="{{ it.kind }}">
+  <span class="link-grip" title="Drag to reorder" aria-hidden="true">⠿</span>
+  <span class="tl-icon" aria-hidden="true">{{ '📄' if is_doc else '🔗' }}</span>
+  {% if is_doc %}
+  <input type="hidden" name="item_url" value="">
+  <div class="tl-main">
+    <button type="button" class="tl-head" title="Show its files">
+      <span class="tl-name">{{ it.text or 'Document' }}</span>
+      <span class="tl-count"></span>
+    </button>
+    <div class="tl-body">
+      <input name="item_text" value="{{ it.text }}" placeholder="Name, e.g. Travel insurance" aria-label="Document name">
+      <div class="tl-files">
+        {% for d in it.docs or [] %}
+        <div class="tl-file">
+          <input type="hidden" name="keep_{{ key }}" value="{{ d.id }}">
+          <span class="file-grip" title="Drag to reorder this file" aria-hidden="true">⠿</span>
+          {% if d.pages %}<img src="{{ url_for('serve_upload', trip_id=tid, name=d.pages[0]) }}" alt="">
+          {% else %}<span class="tl-thumb">📄</span>{% endif %}
+          <span class="tl-file-name">{{ d.name or d.label }}
+            <span class="hint">{% if d.mime == 'application/pdf' %}{{ d.pages|length }} page{{ '' if d.pages|length == 1 else 's' }}{% else %}image{% endif %}</span></span>
+          <button type="button" class="ghost small danger tl-file-del" title="Delete this file" aria-label="Delete this file">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="tl-new-files"></div>
+      <label class="btn small tl-add-files">📎 Add files
+        <input type="file" name="files_{{ key }}" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden>
+      </label>
+      <span class="hint">PDF, JPG, PNG or WEBP · several at once</span>
+    </div>
+  </div>
+  <button type="button" class="ghost small tl-fold" title="Fold or unfold" aria-label="Fold or unfold">
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5 4.5-4.5"/></svg>
+  </button>
+  {% else %}
+  <div class="tl-main tl-link">
+    <input name="item_text" value="{{ it.text }}" placeholder="Text (blank = site name)" aria-label="Displayed text">
+    <input name="item_url" value="{{ it.url }}" placeholder="https://…" inputmode="url" autocomplete="off"
+           spellcheck="false" aria-label="Link">
+  </div>
+  <span></span>
+  {% endif %}
+  <button type="button" class="ghost small tl-remove" title="Remove" aria-label="Remove">✕</button>
+</div>
+{%- endmacro %}
+
+{% macro links_editor(links, hint) %}
+<div class="span2 links-editor" data-links-editor>
+  <input type="hidden" name="links_form" value="1">
+  {% if hint %}<p class="hint links-hint">{{ hint }}</p>{% endif %}
+  <div class="link-head" aria-hidden="true"><span></span><span>Displayed text</span><span>Link</span><span></span></div>
+  <div class="link-rows">
+    {% for l in links or [] %}{{ link_row(l.text, l.url) }}{% endfor %}
+    {% if not links %}{{ link_row() }}{% endif %}
+  </div>
+  <template class="link-template">{{ link_row() }}</template>
+  <button type="button" class="ghost small link-add">+ Add link</button>
+</div>
+{% endmacro %}

@@ -1,0 +1,747 @@
+/* Dark stays on :root; light is the same names with different values, applied
+   either by an explicit choice or — when nothing is stored — by the phone's own
+   setting. Matches how the exported page does it, deliberately: two themes in
+   two files is already one too many places for them to drift. */
+:root {
+  --bg: #12141c;
+  --panel: #1c1f2b;
+  --ink: #eceef4;
+  --muted: #9aa0b0;
+  --line: #363b4d;
+  --divider: #2c3040;
+  --accent: #e3b95e;
+  --danger: #ff6b6b;
+  --transit: #4ecca3;
+  --plane: #ff8a5c;
+  --rental: #7aa2f7;
+  --hotel: #c792ea;
+  --activity: #ff7eb6;
+  --restaurant: #ff6b6b;
+  --location: #56c8d8;
+  --custom: #a0a8bd;
+  /* surfaces that were written inline and assume a dark base */
+  --sunken: #151823;                     /* inputs, segmented controls, wells */
+  /* The calendar's day cells, on their own surface rather than --sunken. They
+     sat 1.08:1 off the panel behind them — flatter than the exported page's
+     1.12:1 — so the grid read as one slab. These lift them to 1.47:1. The value
+     differs from the export's --cell on purpose: here the cells sit on --panel,
+     not on --bg, so the same ratio needs a lighter colour. */
+  --cell: #343b4f;
+  --cell-line: #4d5670;
+  /* Gold is two tokens. As TEXT it darkens on a light background to stay
+     legible; as a FILL it stays bright, or --on-accent (dark) sits on dark gold
+     and becomes unreadable. Use --accent to write with, --accent-fill to fill. */
+  --accent-fill: #e3b95e;
+  --on-accent: #1f2430;                  /* text on a gold fill */
+  /* The type colours have the same two lives: text on a card row, a solid fill
+     behind a type badge. They darken for light, so the badge's text flips. */
+  --on-type: #12141c;
+  --hover: rgba(255, 255, 255, 0.06);
+  --flash-bg: rgba(227, 185, 94, 0.12);
+  --flash-line: rgba(227, 185, 94, 0.40);
+  --overlay: rgba(0, 0, 0, 0.62);
+  --sec-bar: var(--line);                /* the grey section bars in a day */
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* The light palette lives here once, under its own names. Light has to be
+   selected from two places — an explicit choice, and "nothing chosen" falling
+   through to the phone — and if the values were written out in both, one would
+   eventually be edited without the other. Only the aliasing repeats. */
+:root {
+  --l-bg: #eef0f5;        --l-panel: #ffffff;
+  --l-ink: #14171f;       --l-muted: #5b6270;
+  --l-line: #c2c8d6;      --l-divider: #e3e6ee;
+  --l-accent: #8a5f00;    /* gold as text: 5.6:1 on white */
+  --l-accent-fill: #e3b95e;   /* gold as a fill: deliberately the same as dark */
+  --l-on-type: #ffffff;       /* the type colours are dark here, so badges go white */
+  --l-danger: #c32626;
+  --l-transit: #0b7a57;   --l-plane: #b4470f;
+  --l-rental: #2a55c8;    --l-hotel: #7a35c6;
+  --l-activity: #c11c62;  --l-restaurant: #c32626;
+  --l-location: #0b6f85;  --l-custom: #4a5261;
+  --l-sunken: #f3f5f9;
+  --l-cell: #f3f5f9;      /* light is unchanged — nothing to lift above white */
+  --l-cell-line: #c2c8d6;
+  --l-hover: rgba(0, 0, 0, 0.05);
+  --l-flash-bg: rgba(227, 185, 94, 0.22);
+  --l-flash-line: rgba(138, 95, 0, 0.45);
+  --l-overlay: rgba(20, 24, 38, 0.45);
+  --l-sec-bar: #d8dde8;
+}
+:root[data-theme="light"] {
+  --bg: var(--l-bg);               --panel: var(--l-panel);
+  --ink: var(--l-ink);             --muted: var(--l-muted);
+  --line: var(--l-line);           --divider: var(--l-divider);
+  --accent: var(--l-accent);       --danger: var(--l-danger);
+  --accent-fill: var(--l-accent-fill);  --on-type: var(--l-on-type);
+  --transit: var(--l-transit);     --plane: var(--l-plane);
+  --rental: var(--l-rental);       --hotel: var(--l-hotel);
+  --activity: var(--l-activity);   --restaurant: var(--l-restaurant);
+  --location: var(--l-location);   --custom: var(--l-custom);
+  --sunken: var(--l-sunken);       --hover: var(--l-hover);
+  --flash-bg: var(--l-flash-bg);   --flash-line: var(--l-flash-line);
+  --overlay: var(--l-overlay);     --sec-bar: var(--l-sec-bar);
+  --cell: var(--l-cell);           --cell-line: var(--l-cell-line);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg: var(--l-bg);               --panel: var(--l-panel);
+    --ink: var(--l-ink);             --muted: var(--l-muted);
+    --line: var(--l-line);           --divider: var(--l-divider);
+    --accent: var(--l-accent);       --danger: var(--l-danger);
+    --accent-fill: var(--l-accent-fill);  --on-type: var(--l-on-type);
+    --transit: var(--l-transit);     --plane: var(--l-plane);
+    --rental: var(--l-rental);       --hotel: var(--l-hotel);
+    --activity: var(--l-activity);   --restaurant: var(--l-restaurant);
+    --location: var(--l-location);   --custom: var(--l-custom);
+    --sunken: var(--l-sunken);       --hover: var(--l-hover);
+    --flash-bg: var(--l-flash-bg);   --flash-line: var(--l-flash-line);
+    --overlay: var(--l-overlay);     --sec-bar: var(--l-sec-bar);
+    --cell: var(--l-cell);           --cell-line: var(--l-cell-line);
+  }
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  padding-bottom: 60px;
+}
+a { color: var(--accent); }
+
+.bar {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; padding: 14px 22px;
+  background: var(--panel); border-bottom: 1px solid var(--divider);
+  position: sticky; top: 0; z-index: 5;
+}
+.brand { font-weight: 800; font-size: 16px; text-decoration: none; color: var(--ink); }
+/* the actions keep the right end; the theme button and the brand hold the left */
+.bar-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+
+/* Far left of the bar, before the product name, with a rule after it so it
+   reads as chrome rather than as another action next to Preview / Download.
+   Inline SVG, not ☀/🌙 — Windows has no glyph for some emoji and draws a box,
+   which is the same reason the country flags are SVG. */
+.theme-btn {
+  position: relative; flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 999px; padding: 0;
+  background: var(--sunken); color: var(--ink);
+  border: 1px solid var(--line); cursor: pointer;
+}
+/* the circle is 32px; the tap target is padded out to 44px */
+.theme-btn::after {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  width: 44px; height: 44px; transform: translate(-50%, -50%);
+}
+.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+.theme-btn svg { display: block; }
+.theme-btn::before {
+  content: ""; position: absolute; right: -12px; top: 50%;
+  width: 1px; height: 20px; margin-top: -10px; background: var(--line);
+}
+/* the icon names the theme you are in, not the one a tap would give you */
+.theme-btn .sun { display: none; }
+:root[data-theme="light"] .theme-btn .sun { display: block; }
+:root[data-theme="light"] .theme-btn .moon { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .theme-btn .sun { display: block; }
+  :root:not([data-theme]) .theme-btn .moon { display: none; }
+}
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 26px 20px 0; }
+h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+h2 { font-size: 17px; font-weight: 800; margin-bottom: 14px; }
+.muted { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+.hint { color: var(--muted); font-weight: 500; font-size: 11.5px; }
+code {
+  font-size: 11.5px; background: var(--hover);
+  padding: 1px 5px; border-radius: 4px;
+  word-break: break-all;      /* long appdata paths must not widen the page */
+}
+
+.panel {
+  background: var(--panel); border: 1px solid var(--divider);
+  border-radius: 14px; padding: 20px 22px; margin-bottom: 20px;
+}
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.panel-head h2 { margin-bottom: 0; }
+
+/* a panel that folds away — the marker is ours, not the browser's triangle */
+.fold > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  cursor: pointer; list-style: none;
+}
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary h2 { margin-bottom: 0; }
+.fold > summary:hover h2 { color: var(--accent); }
+.fold-hint {
+  flex: 0 0 auto; font-size: 12.5px; font-weight: 700; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+}
+.fold > summary:hover .fold-hint { border-color: var(--accent); color: var(--accent); }
+.fold[open] > summary { margin-bottom: 14px; }
+.fold[open] .fold-hint::after { content: " ▲"; }
+.fold:not([open]) .fold-hint::after { content: " ▼"; }
+.subhead {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); border-top: 1px solid var(--divider); padding-top: 14px; margin-top: 4px;
+}
+.danger-zone { border-color: rgba(255,107,107,0.3); }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.grid .span2 { grid-column: 1 / -1; }
+/* keeps a related set (dates/times, price fields) on its own row */
+.subgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 16px; }
+@media (max-width: 900px) { .subgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .subgrid { grid-template-columns: 1fr; } }
+.grid label, .inline label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 700; }
+/* Labels in a row are stretched to equal height; pinning the control to the
+   bottom keeps every input on one line even when only some have a hint. */
+.grid label > input, .grid label > select, .grid label > textarea { margin-top: auto; }
+.kind-field.hide { display: none; }
+
+input, select, textarea {
+  font: inherit; font-size: 14px; font-weight: 400;
+  background: var(--sunken); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; line-height: 1.5; }
+input[type="file"] { padding: 8px; font-size: 13px; }
+
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+button, .btn {
+  font: inherit; font-size: 13.5px; font-weight: 700;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 9px 18px; cursor: pointer; text-decoration: none; display: inline-block;
+}
+button:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+button.primary, .btn.primary {
+  background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent);
+}
+button.primary:hover, .btn.primary:hover { filter: brightness(1.08); color: var(--on-accent); }
+button.ghost { border-color: transparent; background: none; color: var(--muted); padding: 8px 10px; }
+button.ghost:hover { color: var(--ink); border-color: var(--line); }
+button.danger, button.ghost.danger:hover { color: var(--danger); border-color: var(--danger); }
+
+.inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.inline input[type="file"] { width: auto; flex: 1 1 240px; }
+
+.list { display: flex; flex-direction: column; }
+.row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 4px; border-bottom: 1px solid var(--divider);
+  text-decoration: none; color: var(--ink);
+}
+.row:last-child { border-bottom: none; }
+.row-main { flex: 1 1 auto; min-width: 0; text-decoration: none; color: var(--ink); display: block; }
+.row-title { display: block; font-size: 15px; font-weight: 700; }
+.row-sub { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+/* the card's red heads-up, same line it gets in the exported page */
+.row-alert { display: block; font-size: 13px; font-weight: 700; color: var(--danger); }
+.row:hover .row-title { color: var(--accent); }
+.chev { color: var(--muted); font-size: 18px; }
+.card-row { border-left: 3px solid var(--custom); padding-left: 12px; }
+.card-row[data-type="transit"]    { border-left-color: var(--transit); }
+.card-row[data-type="plane"]      { border-left-color: var(--plane); }
+.card-row[data-type="rental"]     { border-left-color: var(--rental); }
+.card-row[data-type="hotel"]      { border-left-color: var(--hotel); }
+.card-row[data-type="activity"]   { border-left-color: var(--activity); }
+.card-row[data-type="restaurant"] { border-left-color: var(--restaurant); }
+.card-row[data-type="location"]   { border-left-color: var(--location); }
+
+.pill {
+  display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase; border-radius: 999px; padding: 2px 9px; margin-right: 7px;
+  color: var(--on-type); background: var(--custom); vertical-align: 1px;
+}
+.pill[data-type="transit"]    { background: var(--transit); }
+.pill[data-type="plane"]      { background: var(--plane); }
+.pill[data-type="rental"]     { background: var(--rental); }
+.pill[data-type="hotel"]      { background: var(--hotel); }
+.pill[data-type="activity"]   { background: var(--activity); }
+.pill[data-type="restaurant"] { background: var(--restaurant); }
+.pill[data-type="location"]   { background: var(--location); }
+
+/* ---------- cards panel: calendar / list ---------- */
+.hide { display: none !important; }
+.head-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btn.small, button.small { padding: 6px 13px; font-size: 12.5px; }
+
+.seg {
+  display: inline-flex; gap: 3px; padding: 3px;
+  background: var(--sunken); border: 1px solid var(--line); border-radius: 999px;
+}
+.seg-btn {
+  border: 0; background: none; color: var(--muted);
+  font-size: 12.5px; font-weight: 700; padding: 6px 13px; border-radius: 999px;
+}
+.seg-btn:hover { color: var(--ink); border-color: transparent; }
+.seg-btn.active { background: var(--accent-fill); color: var(--on-accent); }
+.seg-btn.active:hover { color: var(--on-accent); }
+
+.cal-month-block + .cal-month-block { margin-top: 18px; }
+.cal-month { font-size: 15px; font-weight: 800; margin-bottom: 9px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cal-dow {
+  text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted); padding-bottom: 2px;
+}
+.cal-day {
+  min-height: 56px; padding: 6px 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  background: var(--cell); border: 1px solid var(--cell-line); border-radius: 11px;
+  color: var(--ink); cursor: pointer;
+}
+.cal-day.out { background: none; border-color: transparent; cursor: default; }
+.cal-day.free { border-style: dashed; }
+.cal-day:not(.out):hover { border-color: var(--accent); }
+.cal-day.today .cal-num { color: var(--accent); }
+.cal-day.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.cal-num { font-size: 18px; font-weight: 800; line-height: 1; }
+.cal-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; min-height: 7px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--custom); }
+.dot[data-type="transit"]    { background: var(--transit); }
+.dot[data-type="plane"]      { background: var(--plane); }
+.dot[data-type="rental"]     { background: var(--rental); }
+.dot[data-type="hotel"]      { background: var(--hotel); }
+.dot[data-type="activity"]   { background: var(--activity); }
+.dot[data-type="restaurant"] { background: var(--restaurant); }
+.dot[data-type="location"]   { background: var(--location); }
+
+.day-panel {
+  margin-top: 18px; padding-top: 14px;
+  border-top: 1px solid var(--divider);
+}
+
+/* ---------- parts of a day, and the hotel above them ---------- */
+.day-pinned {
+  padding-bottom: 10px; margin-bottom: 2px;
+  border-bottom: 1px solid var(--divider);
+}
+.day-pinned .drag-handle { visibility: hidden; }   /* pinned by type, not by hand */
+
+/* A solid bar rather than the exported page's bare gold caps: in the editor
+   these separate blocks of rows you are dragging between, so they want weight.
+   The spacing above a bar is the previous list's padding, never a margin on
+   the bar itself — a sticky element is held off by its own margin, which would
+   open a gap for cards to scroll through. */
+.day-sec-title, .day-pin-title {
+  background: var(--sec-bar); color: var(--ink);
+  text-align: center; border-radius: 9px;
+  font-size: 14.5px; font-weight: 700; letter-spacing: 0.02em;
+  padding: 9px 12px; margin-bottom: 9px;
+}
+.day-sec .list { padding-bottom: 14px; }
+.day-sec.empty { display: none; }
+/* while a card is in the air, every part of the day is a place to drop it */
+.day-panels.dnd .day-sec.empty { display: block; }
+.day-panels.dnd .day-sec.empty .list {
+  min-height: 34px; border: 1px dashed var(--line); border-radius: 10px;
+}
+.day-panels.dnd .day-sec.empty .day-sec-title { opacity: 0.6; }
+
+.drag-handle {
+  display: none; cursor: grab; font-size: 15px; line-height: 1;
+  padding: 8px 6px; color: var(--muted); touch-action: none;
+}
+.day-panel .drag-handle { display: inline-block; }   /* only where order means something */
+.drag-handle:hover { color: var(--accent); border-color: transparent; }
+.card-row.dragging {
+  opacity: 0.55; pointer-events: none;               /* so the pointer sees what's under it */
+  border-left-color: var(--accent);
+}
+.card-row.dragging .drag-handle { cursor: grabbing; }
+.day-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 4px;
+}
+.day-panel-head h3 { font-size: 15px; font-weight: 800; }
+.day-empty { margin: 10px 0 2px; font-size: 13px; }
+
+@media (max-width: 520px) {
+  .cal-grid { gap: 4px; }
+  /* Same move as the export makes on a phone: the seven columns pin the width
+     near 42px, so a nearly-square cell wastes the screen below the grid and
+     leaves the date too small to read at arm's length. Taller cell, bigger
+     date. One notch under the export's 22px because these cells are 5px
+     narrower — at 20px a two-digit date measures 21.7 of 31.9px inner width.
+     60px is the floor, not the height: a busy day carries two rows of dots
+     (these stay 7px, unlike the export's — reading them is the job here) and
+     needs 56, so the floor is what sets the height on a quiet day and evens
+     the grid out.
+     The side padding drops to 2px here: the builder's calendar sits inside a
+     panel, so at 320px its cells are 34px against the export's 39, and at
+     4px a side the widest date ("24", 24.4px) came out 0.4px over the content
+     box. 2px gives it 3.6px of air instead. */
+  .cal-day { min-height: 60px; padding: 6px 2px; border-radius: 9px; }
+  .cal-num { font-size: 20px; }
+}
+
+/* ---------- project page: app shell on a wide screen ----------
+   Below 1101px nothing here applies and the page flows normally, so the two
+   wrappers only need to get out of the way — and to put the cards panel back
+   between "Project details" and "Saved exports", which is the order it reads in
+   on a phone. */
+@media (max-width: 1100px) {
+  .project-layout { display: flex; flex-direction: column; }
+  .project-side { display: contents; }
+  .cal-splitter { display: none; }        /* nothing to resize when it all flows */
+  .project-side > .panel { order: 1; }
+  .project-side > .panel ~ .panel { order: 3; }   /* exports + delete go last */
+  .project-main { order: 2; }
+}
+
+/* Wide screens: the page fills the window and never scrolls. The left column
+   scrolls inside itself, the calendar holds its place (scrolling internally
+   once a long trip would take more than half the height), and the selected
+   day's cards are the part that actually scrolls. */
+@media (min-width: 1101px) {
+  body.project { padding-bottom: 0; }
+  /* the reading width doesn't apply to a two-pane layout; raise this if you
+     want an ultrawide filled edge to edge */
+  body.project .wrap { max-width: 1920px; }
+  body.project h1 { margin-bottom: 2px; }
+  .project-head { margin-bottom: 14px; }
+  .project-head .muted { margin-bottom: 0; }
+
+  .project-layout {
+    display: grid;
+    grid-template-columns: minmax(330px, 1fr) minmax(0, 2fr);
+    gap: 20px;
+    align-items: stretch;
+    /* JS sets the exact height from the space below the layout's top edge */
+    max-height: calc(100vh - 150px);
+  }
+  .project-side, .project-main { height: 100%; min-height: 0; }
+  .project-side {
+    overflow-y: auto; overflow-x: hidden;
+    padding-right: 6px;              /* room for its own scrollbar */
+  }
+  .project-side > .panel:last-child { margin-bottom: 0; }
+
+
+  .project-main { display: flex; }
+  .cards-panel {
+    flex: 1 1 auto; min-height: 0; margin-bottom: 0;
+    display: flex; flex-direction: column;
+  }
+  .cards-panel > .panel-head { flex: 0 0 auto; }
+  .cards-panel > #cardViews { flex: 1 1 0; min-height: 0; }
+  #cardViews, .cardview { display: flex; flex-direction: column; }
+  .cardview { flex: 1 1 0; min-height: 0; }
+
+  /* The calendar takes its own height — four week rows at least, and up to
+     --cal-max on a tall window before it starts scrolling inside itself.
+     These are only the starting point: dragging the splitter sets an explicit
+     height on the element, and a double-click hands it back to these. */
+  .cards-panel { --cal-floor: 330px; --cal-max: 50%; }
+  .cal-region {
+    flex: 0 1 auto; min-height: 0;
+    max-height: max(var(--cal-floor), var(--cal-max));
+    overflow-y: auto; overflow-x: hidden; padding-right: 6px;
+  }
+
+  /* The divider between the two is the drag handle. Its margin is also what
+     keeps the rule off the last row of date cells. */
+  .cal-splitter {
+    flex: 0 0 auto; position: relative;
+    height: 15px; margin-top: 5px;
+    cursor: row-resize; touch-action: none;
+  }
+  .cal-splitter::before {
+    content: "";
+    position: absolute; inset: 7px 0;
+    background: var(--divider); border-radius: 2px;
+  }
+  .cal-splitter:hover::before, .cal-splitter.dragging::before { background: var(--accent); }
+  /* flex-basis 0, not auto: a long card list must not count its own content as
+     a reason to squeeze the calendar. With `auto` the browser shares the
+     overflow between the two panes and the calendar loses rows on a busy day,
+     however much room the panel actually has. */
+  .day-panels, .list-scroll {
+    flex: 1 1 0; min-height: 0;
+    overflow-y: auto; overflow-x: hidden; padding-right: 6px;
+  }
+  .day-panel { margin-top: 0; padding-top: 0; border-top: 0; }
+  /* Only the day's own header stays put, so the date and its *Add card* button
+     are always in reach. Nothing else in this pane sticks: the hotel block and
+     the section bars are things you drag between, and anything parked at the
+     top just gets in the way. (The exported day view does pin the hotel — see
+     §4 of HANDOFF.md; there it is a reference you read, not a list you edit.) */
+  .day-panel-head {
+    position: sticky; top: 0; z-index: 3;
+    background: var(--panel); padding: 13px 0 9px; margin-bottom: 0;
+  }
+}
+
+/* Between the breakpoint and a true widescreen the left third is too narrow
+   for a two-column form; give it one column and let the labels breathe. */
+@media (min-width: 1101px) and (max-width: 1420px) {
+  .project-side .grid { grid-template-columns: minmax(0, 1fr); }
+  .project-side .grid .span2 { grid-column: 1; }
+}
+
+/* ---------- card editor: form + live preview ---------- */
+/* The editor needs room for two panes, so it opts out of the 860px reading width. */
+body.editor .wrap { max-width: 1440px; }
+body.editor h1 { margin-bottom: 14px; }
+
+.editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 11px var(--pane-w, 380px);
+  gap: 11px;
+  align-items: start;
+}
+/* draggable divider between the form and the preview */
+.splitter {
+  align-self: stretch;
+  min-height: 140px;
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+}
+.splitter::before {
+  content: "";
+  position: absolute; inset: 0 4px;
+  background: var(--divider);
+  border-radius: 2px;
+}
+.splitter:hover::before, .splitter.dragging::before { background: var(--accent); }
+
+/* four aligned columns: .half spans two of them */
+@media (min-width: 1101px) {
+  body.editor .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body.editor .grid .half { grid-column: span 2; }
+}
+.preview-pane {
+  position: sticky; top: 76px;
+  background: var(--panel); border: 1px solid var(--divider);
+  border-radius: 14px; padding: 13px 14px 11px;
+}
+.preview-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.preview-title {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.preview-stage {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
+  min-height: 140px;
+}
+#previewFrame { border: 0; display: block; width: 100%; height: 140px; background: var(--bg); }
+.preview-pane .hint { display: block; margin-top: 9px; line-height: 1.45; font-size: 11px; }
+
+/* Wide screens: the editor fills the window. Only the left column scrolls, so
+   the preview and its Save button are physically fixed in place. */
+@media (min-width: 1101px) {
+  body.editor { padding-bottom: 0; }
+  .editor-layout {
+    align-items: stretch;
+    /* JS sets the exact height from the space below the layout's top edge */
+    max-height: calc(100vh - 92px);
+  }
+  .editor-main {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;   /* room for its own scrollbar */
+  }
+  .preview-pane {
+    position: static;     /* nothing scrolls it, so no stickiness needed */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .preview-stage { flex: 1 1 auto; min-height: 0; }
+  #previewFrame { height: 100%; }
+  .preview-pane .hint { flex: 0 0 auto; margin-top: 0; }
+  .pane-actions { flex: 0 0 auto; }
+  .form-actions { display: none; }
+}
+@media (max-width: 1100px) {
+  body.editor .wrap { max-width: 860px; }
+  .editor-layout { grid-template-columns: 1fr; }
+  .editor-main { display: contents; }   /* form and documents flow normally */
+  .splitter { display: none; }
+  .preview-pane { position: static; order: -1; }
+  .pane-actions { display: none; }
+}
+
+/* ---------- unsaved-changes dialog ---------- */
+.ask-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--overlay);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.ask-overlay.open { display: flex; }
+.ask-box {
+  width: 100%; max-width: 420px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 22px 24px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+.ask-box h2 { margin-bottom: 8px; }
+.ask-box .muted { margin-bottom: 18px; }
+.ask-box .actions { flex-direction: column; align-items: stretch; gap: 8px; }
+.ask-box .actions button { width: 100%; }
+
+/* ---------- copy-a-card dialog ---------- */
+.ask-box.wide { max-width: 480px; }
+.ask-box .grid { gap: 13px 14px; }
+.ask-box .actions.row-actions { flex-direction: row; align-items: center; }
+.ask-box .actions.row-actions button { width: auto; }
+/* a checkbox sits beside its text, not above it like the other labels */
+.grid label.check { flex-direction: row; align-items: center; gap: 9px; font-weight: 600; }
+.grid label.check > input { width: auto; margin-top: 0; accent-color: var(--accent); }
+
+/* ---------- which days a multi-day card shows on ---------- */
+.daypick .subhead { margin-bottom: 7px; }
+.daypick-note { display: block; margin-bottom: 11px; line-height: 1.45; }
+.daychips { display: flex; flex-wrap: wrap; gap: 8px; }
+.grid .daychip {
+  flex-direction: row; align-items: center; gap: 7px;
+  background: var(--sunken); border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 13px 6px 11px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+}
+.grid .daychip > input { width: auto; margin-top: 0; accent-color: var(--accent); cursor: pointer; }
+.daychip:hover { border-color: var(--accent); }
+.daychip.off { color: var(--muted); border-style: dashed; }
+.daypick-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 11px; }
+
+.docs { display: flex; flex-wrap: wrap; gap: 12px; }
+.doc { width: 120px; font-size: 11px; color: var(--muted); }
+.doc img {
+  width: 100%; border-radius: 8px; border: 1px solid var(--line);
+  background: #fff; display: block; margin-bottom: 5px;
+}
+.doc-name { display: block; word-break: break-word; }
+
+.flashes { margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; }
+.flash {
+  background: var(--flash-bg); border: 1px solid var(--flash-line);
+  color: var(--ink); border-radius: 9px; padding: 10px 14px; font-size: 13.5px;
+}
+
+@media (max-width: 620px) {
+  .grid { grid-template-columns: 1fr; }
+  .grid .span2 { grid-column: 1; }
+  .wrap { padding: 20px 14px 0; }
+  .panel { padding: 16px 14px; }
+}
+
+/* ---------- link editor (card links + the trip's links bar) ----------
+   Two fields per row: what the page shows, and where it goes. The grip drags a
+   row; the order here is the order on the page. */
+.links-editor { display: flex; flex-direction: column; gap: 7px; }
+.links-hint { margin: 0; }
+.link-head, .link-row {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1.3fr) 34px;
+  gap: 8px; align-items: center;
+}
+.link-head { font-size: 12px; font-weight: 700; color: var(--muted); }
+.link-grip {
+  cursor: grab; font-size: 15px; line-height: 1; color: var(--muted);
+  text-align: center; touch-action: none; user-select: none; padding: 8px 0;
+}
+.link-grip:hover { color: var(--accent); }
+.link-row.dragging { opacity: 0.55; }
+.link-row.dragging .link-grip { cursor: grabbing; }
+.link-remove { padding: 6px 0; }
+.link-add { align-self: flex-start; margin-top: 2px; }
+@media (max-width: 520px) {
+  /* text over link on a phone: two narrow inputs side by side are unusable */
+  .link-head { display: none; }
+  .link-row { grid-template-columns: 22px minmax(0, 1fr) 34px; }
+  .link-row input[name="link_text"] { grid-column: 2; grid-row: 1; }
+  .link-row input[name="link_url"] { grid-column: 2; grid-row: 2; }
+  .link-row .link-grip { grid-row: 1 / 3; }
+  .link-row .link-remove { grid-column: 3; grid-row: 1 / 3; }
+  .link-row + .link-row { border-top: 1px dashed var(--divider); padding-top: 7px; }
+}
+
+/* ---------- trip documents and links (project page) ----------
+   One list, display order. A document row folds to one line (name + file count);
+   a link row is just its two fields. Grip | icon | body | fold | remove. */
+.items-editor { display: flex; flex-direction: column; gap: 8px; }
+.items-add { display: flex; gap: 8px; flex-wrap: wrap; }
+.items-hint { margin: 0; }
+.items-rows { display: flex; flex-direction: column; }
+.tl-item {
+  display: grid; grid-template-columns: 22px 24px minmax(0, 1fr) 34px 34px;
+  gap: 8px; align-items: start; padding: 10px 0; border-top: 1px dashed var(--divider);
+}
+.tl-item:last-child { border-bottom: 1px dashed var(--divider); }
+.tl-item .link-grip { padding-top: 10px; }
+.tl-item.dragging { opacity: 0.55; }
+.tl-icon { font-size: 17px; line-height: 1; padding-top: 9px; text-align: center; }
+.tl-main { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.tl-item .tl-fold, .tl-item .tl-remove {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+}
+.tl-fold svg { transition: transform 0.15s; }
+.tl-item:not(.closed) .tl-fold svg { transform: rotate(180deg); }
+.tl-head {
+  display: none; align-items: baseline; gap: 8px; width: 100%; min-height: 34px;
+  background: none; border: 0; padding: 0; text-align: left; cursor: pointer; color: var(--ink);
+}
+.tl-head .tl-name { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-head .tl-count { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.tl-item.closed .tl-head { display: flex; align-items: center; }
+.tl-item.closed .tl-body { display: none; }
+.tl-body { display: flex; flex-direction: column; gap: 7px; }
+.tl-files, .tl-new-files { display: flex; flex-direction: column; gap: 6px; }
+.tl-files:empty, .tl-new-files:empty { display: none; }
+.tl-file {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) 34px; gap: 9px; align-items: center;
+  background: var(--sunken); border: 1px solid var(--line); border-radius: 9px; padding: 5px 6px 5px 8px;
+}
+.tl-file.new { border-style: dashed; }
+.tl-file img, .tl-thumb {
+  width: 40px; height: 48px; object-fit: cover; border-radius: 5px; background: var(--card);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.tl-file-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-file-name .hint { display: block; }
+.tl-file .tl-file-del { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.tl-add-files { align-self: flex-start; cursor: pointer; }
+
+/* ---------- document rows: the card editor's documents, and files inside a
+   home page document. Grip | thumbnail | name + pages | (re-render) | ✕.
+   Drag by the grip; the order is the viewer's tab order. ---------- */
+.doc-rows { display: flex; flex-direction: column; gap: 6px; }
+.doc-rows:empty { display: none; }
+.doc-row {
+  display: grid; grid-template-columns: 22px 40px minmax(0, 1fr) auto 34px; gap: 9px; align-items: center;
+  background: var(--sunken); border: 1px solid var(--line); border-radius: 9px; padding: 5px 6px 5px 4px;
+}
+.doc-row img, .doc-row .tl-thumb {
+  width: 40px; height: 48px; object-fit: cover; border-radius: 5px; background: var(--card);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.doc-row-name { font-size: 13px; overflow-wrap: anywhere; }
+.doc-row-name .hint { display: block; }
+.doc-row .doc-row-del { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.doc-row.dragging, .tl-file.dragging { opacity: 0.55; }
+.doc-row .link-grip { padding: 8px 0; }
+/* home page files get a grip column in front */
+.tl-file { grid-template-columns: 20px 40px minmax(0, 1fr) 34px; padding-left: 4px; }
+.file-grip {
+  cursor: grab; font-size: 15px; line-height: 1; color: var(--muted); text-align: center;
+  touch-action: none; user-select: none; padding: 8px 0;
+}
+.file-grip:hover { color: var(--accent); }

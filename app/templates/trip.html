@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.name }} · Itinerary Builder{% endblock %}
+{% block body_class %}project{% endblock %}
+{% from "_links.html" import item_row %}
+
+{# one row shape for both the list and the per-day panels #}
+{% macro card_row(c, trip, types) %}
+<div class="row card-row" data-type="{{ c.type }}" data-card="{{ c.id }}">
+  <button type="button" class="ghost drag-handle" title="Drag to reorder, or into another part of the day">⠿</button>
+  <a class="row-main" href="{{ url_for('edit_card', trip_id=trip.id, card_id=c.id) }}">
+    <span class="row-title">
+      <span class="pill" data-type="{{ c.type }}">{{ card_meta(c).label }}</span>
+      {{ c.title or '(untitled)' }}
+      {%- if c.alert %}<span class="row-alert">{{ c.alert }}</span>{% endif %}
+    </span>
+    <span class="row-sub">
+      {{ c.start_date }}{% if c.start_time %} {{ c.start_time }}{% endif %}
+      {%- if c.end_date and c.end_date != c.start_date %} → {{ c.end_date }}{% endif %}
+      {%- if c.end_time %} {{ c.end_time }}{% endif %}
+      {%- if c.price_ntd %} · NT${{ '{:,}'.format(c.price_ntd) }}{% endif %}
+      {%- if c.docs %} · 📎 {{ c.docs|length }}{% endif %}
+      {%- if c.hide_days %} · 🙈 {{ c.hide_days|length }} day{{ '' if c.hide_days|length == 1 else 's' }} hidden{% endif %}
+    </span>
+  </a>
+  <button type="button" class="ghost" title="Copy to another date or project"
+          data-copy-card="{{ c.id }}" data-copy-title="{{ c.title or '(untitled)' }}"
+          data-copy-date="{{ c.start_date }}" data-copy-docs="{{ c.docs|length if c.docs else 0 }}">⇄</button>
+  <form method="post" action="{{ url_for('duplicate_card', trip_id=trip.id, card_id=c.id) }}">
+    <button class="ghost" title="Duplicate and edit">⧉</button>
+  </form>
+  <form method="post" action="{{ url_for('remove_card', trip_id=trip.id, card_id=c.id) }}"
+        onsubmit="return confirm('Delete this card and its documents?')">
+    <button class="ghost danger" title="Delete">✕</button>
+  </form>
+</div>
+{% endmacro %}
+
+{% block bar %}
+<div class="bar-actions">
+  <a class="btn" href="{{ url_for('index') }}">← All projects</a>
+  <a class="btn" href="{{ live_url(trip.id) }}" target="_blank">🔗 Live link</a>
+  <a class="btn primary" href="{{ url_for('download', trip_id=trip.id) }}" data-no-guard>⬇ Download HTML</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="project-head">
+  <h1>{{ trip.name }}</h1>
+  <p class="muted">{{ trip.start_date }} → {{ trip.end_date }} ·
+    {{ cards|length }} card{{ '' if cards|length == 1 else 's' }} ·
+    <a href="{{ url_for('export_zip', trip_id=trip.id) }}" data-no-guard>export .zip (with documents)</a> ·
+    <a href="{{ url_for('export_json', trip_id=trip.id) }}" data-no-guard>export .json</a>
+  </p>
+</div>
+
+{# On a wide screen this becomes an app shell: the left column and the calendar
+   hold still and only the day's cards scroll. See app.css and app.js. #}
+<div class="project-layout" id="projectLayout">
+<aside class="project-side" id="projectSide">
+
+{# collapsed by default: the dates and title are set once and rarely touched #}
+<details class="panel fold">
+  <summary><h2>Project details</h2><span class="fold-hint">edit</span></summary>
+  <form method="post" action="{{ url_for('update_trip', trip_id=trip.id) }}" class="grid"
+        data-dirty-guard>
+    <label>Project name
+      <span class="hint">shown here · renaming moves the folder</span>
+      <input name="name" value="{{ trip.name }}" required>
+    </label>
+    <label>Page title <span class="hint">heading inside the exported HTML</span>
+      <input name="title" value="{{ trip.title }}" required>
+    </label>
+    <label>Start date
+      <input type="date" name="start_date" value="{{ trip.start_date }}" required>
+    </label>
+    <label>End date
+      <input type="date" name="end_date" value="{{ trip.end_date }}" required>
+    </label>
+    <label>Eyebrow
+      <input name="eyebrow" value="{{ trip.eyebrow or '' }}" placeholder="Winter Getaway">
+    </label>
+    <label>Subtitle <span class="hint">blank = {{ auto_subtitle }}</span>
+      <input name="subtitle" value="{{ trip.subtitle or '' }}" placeholder="{{ auto_subtitle }}">
+    </label>
+    <label class="span2">Subheading
+      <span class="hint">plain text shown under the dates · commas split it into spaced items ·
+        <code>cz:</code> or an emoji flag becomes a flag icon · leave blank to hide the line</span>
+      <input name="tags" value="{{ trip.tags|join(', ') }}" placeholder="jp:Japan, kr:South Korea">
+    </label>
+    <label class="span2">Footnote <span class="hint">small print under the cost summary</span>
+      <textarea name="notes" rows="2">{{ trip.notes or '' }}</textarea>
+    </label>
+    <label class="span2">Day notes <span class="hint">one per line, <code>YYYY-MM-DD = text</code> — shown when a day has no cards</span>
+      <textarea name="day_notes" rows="3">{% for k, v in (trip.day_notes or {}).items() %}{{ k }} = {{ v }}
+{% endfor %}</textarea>
+    </label>
+    <div class="span2 actions">
+      <button class="primary" type="submit">Save trip details</button>
+    </div>
+  </form>
+</details>
+
+{# The trip's own documents and links: the 📎 bar at the bottom of the live calendar.
+   One list, in display order; rows are added, folded, dragged and removed by app.js
+   ([data-items-editor]) and the whole list posts to save_trip_items. #}
+{% set items = trip_items(trip) %}
+<details class="panel fold" id="tripItems">
+  <summary><h2>Trip documents and links</h2>
+    <span class="fold-hint">{{ items|length }} item{{ '' if items|length == 1 else 's' }}</span></summary>
+  <form method="post" action="{{ url_for('save_trip_items', trip_id=trip.id) }}"
+        enctype="multipart/form-data" class="items-editor" data-items-editor data-dirty-guard>
+    <div class="items-add">
+      <button type="button" class="ghost small" data-add="doc">📄 Add document</button>
+      <button type="button" class="ghost small" data-add="link">🔗 Add link</button>
+    </div>
+    <p class="hint items-hint">Shown in the 📎 pop-up at the bottom of the live calendar, in this order — drag ⠿ to reorder.</p>
+    <div class="items-rows">
+      {% for it in items %}{{ item_row(it, it.id, trip.id) }}{% endfor %}
+    </div>
+    <template data-new="doc">{{ item_row({'kind': 'doc', 'text': '', 'docs': []}, '__KEY__', trip.id, fresh=True) }}</template>
+    <template data-new="link">{{ item_row({'kind': 'link', 'text': '', 'url': ''}, '__KEY__', trip.id, fresh=True) }}</template>
+    <div class="actions">
+      <button class="primary" type="submit">Save documents and links</button>
+    </div>
+  </form>
+</details>
+
+<div class="panel">
+  <div class="panel-head">
+    <h2>Activity history</h2>
+    <span class="hint">last {{ history|length }} change{{ '' if history|length == 1 else 's' }}</span>
+  </div>
+  {% if history %}
+  <div class="list">
+    {% for h in history %}
+    <div class="row">
+      <span class="row-main">
+        <span class="row-title">{{ h.label }}</span>
+        <span class="row-sub">{{ h.when }} · {{ h.cards }} card{{ '' if h.cards == 1 else 's' }} before this</span>
+      </span>
+      <form method="post" action="{{ url_for('revert_trip', trip_id=trip.id, snap_id=h.id) }}"
+            onsubmit="return confirm('Put the project back to how it was before “{{ h.label }}”?\n\nAnything done since then is undone — but this revert is itself added to the history, so you can undo it.')">
+        <button class="ghost" title="Undo this and everything after it">↩ Revert</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">Nothing yet. Every save, delete and move is kept here so you can step back.</p>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <h2>Saved exports</h2>
+    <span class="hint">every download is kept here · <code>{{ project_path }}</code></span>
+  </div>
+
+  {% if exports %}
+  <div class="list">
+    {% for e in exports %}
+    <div class="row">
+      <span class="row-main">
+        <span class="row-title">
+          <span class="pill" data-type="{{ 'hotel' if e.kind == 'html' else 'location' }}">{{ e.kind }}</span>
+          {{ e.name }}
+        </span>
+        <span class="row-sub">
+          {{ e.modified }} ·
+          {% if e.size_mb >= 1 %}{{ e.size_mb }} MB{% else %}{{ e.size_kb }} KB{% endif %}
+        </span>
+      </span>
+      <a class="btn" href="{{ url_for('download_export', trip_id=trip.id, kind=e.kind, name=e.name) }}"
+         title="Download" data-no-guard>⬇</a>
+      <form method="post"
+            action="{{ url_for('remove_export', trip_id=trip.id, kind=e.kind, name=e.name) }}"
+            onsubmit="return confirm('Delete {{ e.name }}?')">
+        <button class="ghost danger" title="Delete">✕</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No exports yet — use <strong>Download HTML</strong> and a dated copy lands here.</p>
+  {% endif %}
+</div>
+
+<div class="panel live-link">
+  <div class="panel-head"><h2>Live link</h2></div>
+  <p class="muted">Anyone with this link can view the live page (read-only, attached documents included), no password needed. It stays the same when you rename the trip.</p>
+  <input type="text" readonly class="live-link-url" data-path="{{ live_url(trip.id) }}"
+         value="{{ live_url(trip.id) }}" onclick="this.select()" style="width:100%">
+  <form method="post" action="{{ url_for('reset_live_link', trip_id=trip.id) }}"
+        onsubmit="return confirm('Make a new live link? The current one stops working immediately.')">
+    <button class="ghost small">New link</button>
+  </form>
+  <script>
+    document.querySelectorAll('.live-link-url').forEach(function (el) {
+      el.value = location.origin + el.dataset.path;   // full address, as seen from this browser
+    });
+  </script>
+</div>
+
+<div class="panel danger-zone">
+  <form method="post" action="{{ url_for('remove_trip', trip_id=trip.id) }}"
+        onsubmit="return confirm('Delete this whole trip, including uploads?')">
+    <button class="ghost danger">Delete trip</button>
+  </form>
+</div>
+
+</aside><!-- /project-side -->
+
+<section class="project-main">
+<div class="panel cards-panel">
+  <div class="panel-head">
+    <h2>Cards</h2>
+    <div class="head-tools">
+      <div class="seg" id="cardViewTabs">
+        <button type="button" class="seg-btn active" data-cardview="calendar">📅 Calendar</button>
+        <button type="button" class="seg-btn" data-cardview="list">📋 List</button>
+      </div>
+      <a class="btn primary" href="{{ url_for('new_card', trip_id=trip.id) }}">+ Add card</a>
+    </div>
+  </div>
+
+  <div id="cardViews" data-selected="{{ selected_day }}" data-trip="{{ trip.id }}"
+       data-restore="{{ '1' if request.args.get('restore') else '' }}">
+
+    <div class="cardview" data-cardview="calendar">
+      {% if months %}
+      {# holds still on a wide screen; a trip with many months scrolls in here #}
+      <div class="cal-region" id="calRegion">
+      {% for m in months %}
+      <div class="cal-month-block">
+        <div class="cal-month">{{ m.label }}</div>
+        <div class="cal-grid">
+          {% for d in dow %}<div class="cal-dow">{{ d }}</div>{% endfor %}
+          {% for _ in range(m.lead) %}<span class="cal-day out"></span>{% endfor %}
+          {% for d in m.days %}
+          <button type="button" data-day="{{ d.key }}" title="{{ d.label }}"
+                  class="cal-day{% if not d.cards %} free{% endif %}{% if d.key == today %} today{% endif %}">
+            <span class="cal-num">{{ d.num }}</span>
+            <span class="cal-dots">
+              {%- for t in d.types %}<i class="dot" data-type="{{ t }}"></i>{% endfor -%}
+            </span>
+          </button>
+          {% endfor %}
+          {% for _ in range(m.trail) %}<span class="cal-day out"></span>{% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      </div><!-- /cal-region -->
+
+      <div class="cal-splitter" id="calSplitter"
+           title="Drag to give the calendar more or less room · double-click to reset"></div>
+
+      <div class="day-panels" id="dayPanels"
+           data-place-url="{{ url_for('place_card', trip_id=trip.id, card_id='__ID__') }}">
+        {% for m in months %}{% for d in m.days %}
+        <div class="day-panel hide" data-day="{{ d.key }}">
+          <div class="day-panel-head">
+            <h3>{{ d.label }}</h3>
+            <a class="btn primary small"
+               href="{{ url_for('new_card', trip_id=trip.id, date=d.key) }}">+ Add card on {{ d.short }}</a>
+          </div>
+          {% if d.cards %}
+          {% if d.pinned %}
+          <div class="day-pinned">
+            <div class="day-pin-title">{{ pinned_label }}</div>
+            <div class="list">
+              {% for c in d.pinned %}{{ card_row(c, trip, types) }}{% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {# every part of the day is rendered; the empty ones only appear
+             while something is being dragged, so they can be dropped into #}
+          {% for g in d.groups %}
+          <div class="day-sec{{ '' if g.cards else ' empty' }}">
+            <div class="day-sec-title">{{ g.label }}</div>
+            <div class="list" data-drop="{{ g.key }}" data-day="{{ d.key }}">
+              {% for c in g.cards %}{{ card_row(c, trip, types) }}{% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <p class="muted day-empty">Nothing planned for this day yet.</p>
+          {% endif %}
+        </div>
+        {% endfor %}{% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">Set a start and end date in <strong>Project details</strong> to get a calendar.</p>
+      {% endif %}
+    </div>
+
+    <div class="cardview hide" data-cardview="list">
+      <div class="list-scroll" id="listScroll">
+        {% if cards %}
+        <div class="list">
+          {% for c in cards %}{{ card_row(c, trip, types) }}{% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No cards yet. Add your first booking.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+</section><!-- /project-main -->
+</div><!-- /project-layout -->
+
+{# JS fills in the card id and the dates; __ID__ is the placeholder in the action #}
+<div class="ask-overlay" id="copyModal"
+     data-action="{{ url_for('copy_card', trip_id=trip.id, card_id='__ID__') }}">
+  <div class="ask-box wide">
+    <h2>Copy card</h2>
+    <p class="muted" id="copyWhat">&nbsp;</p>
+    <form method="post" id="copyForm" class="grid">
+      <label class="span2">To project
+        <select name="target_trip" id="copyTarget">
+          {% for t in all_trips %}
+          <option value="{{ t.id }}" {{ 'selected' if t.id == trip.id }}
+                  data-range="{{ t.start_date }} → {{ t.end_date }}">
+            {{ t.name }}{% if t.id == trip.id %} (this project){% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="span2">New start date
+        <span class="hint" id="copyRange"></span>
+        <input type="date" name="start_date" id="copyDate" required>
+      </label>
+      <label class="span2 check" id="copyDocsRow">
+        <input type="checkbox" name="copy_docs" value="1" checked>
+        <span>Copy the attached documents too</span>
+      </label>
+      <div class="span2 actions row-actions">
+        <button class="primary" type="submit">Copy card</button>
+        <button class="ghost" type="button" id="copyCancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
