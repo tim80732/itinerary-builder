@@ -22,7 +22,7 @@ from .triptypes import (CARD_FIELDS, LINK_TEXT_MAX, SECTION_LABELS, TYPES, card_
                         clean_links, kind_of, modes_of, trip_items)
 
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
-WHO = "Assistim"
+WHO = "API"   # prefix on history entries this API writes, e.g. "API: edited …"
 
 
 # ------------------------------------------------------------------ auth / errors
