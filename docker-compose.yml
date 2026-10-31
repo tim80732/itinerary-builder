@@ -1,7 +1,6 @@
 services:
   itinerary-builder:
-    build: .
-    image: itinerary-builder:latest
+    image: ghcr.io/tim80732/itinerary-builder:latest
     container_name: itinerary-builder
     ports:
       - "8080:8080"

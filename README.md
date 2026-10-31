@@ -24,39 +24,25 @@ Itinerary Builder keeps the editing on your server and gives you a single HTML f
 
 ## Install on Unraid
 
-The image is built on the server from this repository.
-
-1. In a terminal on the server:
+1. In a terminal on the server, download the template:
 
    ```bash
-   git clone https://github.com/tim80732/itinerary-builder /mnt/user/appdata/itinerary-builder/src
-   docker build -t itinerary-builder:latest /mnt/user/appdata/itinerary-builder/src
    wget -O /boot/config/plugins/dockerMan/templates-user/my-itinerary-builder.xml https://raw.githubusercontent.com/tim80732/itinerary-builder/main/unraid/itinerary-builder.xml
    ```
 
 2. Docker tab → **Add Container** → pick **itinerary-builder** from the template list.
 3. Set an **App Password**. The app holds names, booking references, door PINs and scanned tickets.
-4. Apply, then open the WebUI and sign in with any username and that password. Turn on **autostart** for the container.
+4. Apply, then open the WebUI and sign in with any username and that password.
 
-Trips are stored in `/mnt/user/appdata/itinerary-builder/data`, next to the source and not inside it. Include that folder in your appdata backup.
-
-### Updating
-
-```bash
-bash /mnt/user/appdata/itinerary-builder/src/unraid/deploy.sh
-```
-
-It pulls the latest code, rebuilds the image and recreates the container. Trips, documents and saved exports are in the data folder and are kept.
+The template is kept on the flash drive, so it survives reboots. Updates show up on the Docker tab like any other container. Trips are stored in `/mnt/user/appdata/itinerary-builder/data` and are kept across updates. Include that folder in your appdata backup.
 
 ## Any Docker host
 
 ```bash
-git clone https://github.com/tim80732/itinerary-builder && cd itinerary-builder
-docker build -t itinerary-builder:latest .
 docker run -d --name itinerary-builder -p 8099:8080 \
   -v /path/to/appdata:/data \
   -e APP_PASSWORD=change-me -e TZ=Asia/Taipei \
-  itinerary-builder:latest
+  ghcr.io/tim80732/itinerary-builder:latest
 ```
 
 Or `docker compose up -d` with the included `docker-compose.yml`.
@@ -100,9 +86,11 @@ Each project folder holds `trip.json`, the documents, the last 10 undo points an
 | `app/storage.py` | Projects on disk, PDF rendering, history, zip import/export |
 | `app/triptypes.py` | Card types and parts of the day |
 | `app/templates/`, `app/static/` | Editor UI (Jinja, plain JavaScript, no build step) |
-| `unraid/` | Unraid template and update script |
+| `unraid/` | Unraid template |
 
 [HANDOFF.md](HANDOFF.md) explains how it works and why, for whoever changes it next. PDFs are rendered with [pypdfium2](https://github.com/pypdfium2-team/pypdfium2). Served by [Waitress](https://github.com/Pylons/waitress).
+
+To build the image yourself: `docker build -t itinerary-builder .` in this folder. Releases are built by GitHub Actions: pushing a tag like `v1.0.0` pushes the image to `ghcr.io/tim80732/itinerary-builder` (`:1.0.0` and `:latest`).
 
 ## License
 

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>itinerary-builder</Name>
-  <Repository>itinerary-builder:latest</Repository>
-  <Registry/>
+  <Repository>ghcr.io/tim80732/itinerary-builder:latest</Repository>
+  <Registry>https://github.com/tim80732/itinerary-builder/pkgs/container/itinerary-builder</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support/>
+  <Support>https://github.com/tim80732/itinerary-builder/issues</Support>
   <Project>https://github.com/tim80732/itinerary-builder</Project>
   <Overview>
     Build travel itineraries card by card and export them as one self-contained
@@ -17,9 +17,6 @@
 
     Trips are stored as plain JSON plus uploaded files under /data — back that
     path up. Set APP_PASSWORD to require a login (any username, that password).
-
-    NOTE: this template uses an image built on the server from
-    https://github.com/tim80732/itinerary-builder - see its README.
   </Overview>
   <Category>Productivity: Tools:Utilities</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>

@@ -24,7 +24,7 @@ product; the web app is scaffolding for producing it.
 | `app/templates/*.html` | ~500 | Editor UI (Jinja). `card_form.html` is the big one. |
 | `app/static/app.{css,js}` | ~1000 | Editor styling and seven small JS modules. |
 | `tools/import_legacy_html.py` | 335 | One-off converter for the original hand-built page. |
-| `unraid/` | | Unraid template and `deploy.sh`, the update script. |
+| `unraid/` | | Unraid template. |
 
 No build step, no bundler, no framework on the client. Plain ES5-ish JS so the
 exported file works on old phone browsers.
@@ -625,26 +625,16 @@ inside the project, drops its documents and opens the copy for editing.
 
 ## 13. Deploy and update
 
-The server runs a clone of the GitHub repo at
-`/mnt/user/appdata/itinerary-builder/src`, with the data beside it in
+The server runs the published image `ghcr.io/tim80732/itinerary-builder:latest`
+from the template in `unraid/`, with the data in
 `/mnt/user/appdata/itinerary-builder/data`. **Change the code here, commit, push,
-then on the server run `bash /mnt/user/appdata/itinerary-builder/src/unraid/deploy.sh`.**
-Never edit the server's copy: the next `git pull --ff-only` refuses to run over
-local changes, and they were never in the repo to begin with.
+then push a tag like `v1.0.1`.** GitHub Actions (`.github/workflows/release.yml`)
+builds the image and pushes `:1.0.1` and `:latest`; the Unraid Docker tab then
+shows an update for the container, and applying it recreates the container on the
+new image. The data folder is a volume, so trips are kept.
 
-What the script handles, and why each step is there:
-
-1. The image is built **locally** on the server (`docker build -t
-   itinerary-builder:latest .`), so Unraid's update check always says "not
-   available" — expected, not an error. Avoid *Force Update*: it tries to
-   `docker pull` an image no registry has.
-2. The container has to be **recreated**, not restarted — a running container is
-   bound to the old image's ID, so Stop/Start keeps serving old code. The script
-   calls Unraid's own `rebuild_container`, which is what Edit → Apply does.
-3. `rebuild_container` leaves the container **stopped** unless autostart is on.
-   The script starts it again if it was running before.
-4. Each build leaves the previous image untagged, which Unraid lists as an
-   *orphan image*; `docker image prune -f` clears them.
+A plain push to `main` without a tag publishes nothing, so the server keeps
+running the last tagged release.
 
 ## 14. Moving the whole thing
 
