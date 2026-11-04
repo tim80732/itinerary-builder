@@ -1,6 +1,6 @@
 # Itinerary Builder
 
-Builds a travel itinerary card by card and exports it as **one self-contained HTML file**: a calendar you tap through day by day, a printable schedule, a cost summary, and every booking document embedded, so the file works on a phone with no network. Runs as a small web app in Docker (made for Unraid).
+Builds a travel itinerary card by card and exports it as **one self-contained HTML file**: a calendar you tap through day by day, a printable schedule, a cost summary, and every booking document embedded, so the file works on a phone with no network. Runs as a small web app in Docker (made for Unraid). What's new: [CHANGELOG.md](CHANGELOG.md).
 
 **Built by AI.** The code and docs in this repository were written by Claude (Anthropic's AI model), directed and tested by [@tim80732](https://github.com/tim80732). It's used for real trips, but review it yourself before trusting it with documents you can't replace, and keep backups.
 
@@ -90,7 +90,7 @@ Each project folder holds `trip.json`, the documents, the last 10 undo points an
 
 [HANDOFF.md](HANDOFF.md) explains how it works and why, for whoever changes it next. PDFs are rendered with [pypdfium2](https://github.com/pypdfium2-team/pypdfium2). Served by [Waitress](https://github.com/Pylons/waitress).
 
-To build the image yourself: `docker build -t itinerary-builder .` in this folder. Releases are built by GitHub Actions: pushing a tag like `v1.0.0` pushes the image to `ghcr.io/tim80732/itinerary-builder` (`:1.0.0` and `:latest`).
+To build the image yourself: `docker build -t itinerary-builder .` in this folder. Releases are built by GitHub Actions: pushing a tag like `v1.0.0` pushes the image to `ghcr.io/tim80732/itinerary-builder` (`:1.0.0` and `:latest`). Add the version's section to [CHANGELOG.md](CHANGELOG.md) first: it becomes the release notes, and the build stops if it's missing.
 
 ## License
 
